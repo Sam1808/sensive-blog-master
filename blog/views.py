@@ -1,4 +1,4 @@
-from django.db.models import Count, Prefetch
+from django.db.models import Count
 from django.shortcuts import render
 from blog.models import Comment, Post, Tag
 
@@ -28,12 +28,12 @@ def index(request):
 
     most_popular_posts = Post.objects.popular()[:5] \
                                      .prefetch_related('author') \
-                                     .prefetch_related(Prefetch('tags', queryset=Tag.objects.popular())) \
+                                     .prefetch_tags() \
                                      .fetch_with_comments_count()
 
     most_fresh_posts = Post.objects.order_by('-published_at')[:5] \
                                    .prefetch_related('author') \
-                                   .prefetch_related(Prefetch('tags', queryset=Tag.objects.popular())) \
+                                   .prefetch_tags() \
                                    .annotate(Count('comments'))
 
     most_popular_tags = Tag.objects.popular()[:5]
@@ -77,7 +77,7 @@ def post_detail(request, slug):
 
     most_popular_posts = Post.objects.popular() \
                                      .prefetch_related('author')[:5] \
-                                     .prefetch_related(Prefetch('tags', queryset=Tag.objects.popular())) \
+                                     .prefetch_tags() \
                                      .fetch_with_comments_count()
 
     context = {
@@ -95,11 +95,11 @@ def tag_filter(request, tag_title):
 
     most_popular_posts = Post.objects.popular()[:5] \
                                      .prefetch_related('author') \
-                                     .prefetch_related(Prefetch('tags', queryset=Tag.objects.popular())) \
+                                     .prefetch_tags() \
                                      .fetch_with_comments_count()
 
     related_posts = tag.posts.all()[:20].prefetch_related('author')[:5] \
-                                        .prefetch_related(Prefetch('tags', queryset=Tag.objects.popular())) \
+                                        .prefetch_tags() \
                                         .fetch_with_comments_count()
 
     context = {
